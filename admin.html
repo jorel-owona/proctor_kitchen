@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Proctor Kitchen</title>
+
+    <!-- Charger Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style2.css">
+    <link rel="icon" type="image/x-icon" href="logo.jpeg">
+</head>
+
+<body class="admin-body">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar">
+        <div class="admin-logo">
+            <img src="logo.jpeg" alt="Proctor Kitchen">
+            <h2>PROCTOR KITCHEN</h2>
+            <p>Espace Administrateur</p>
+        </div>
+        <nav class="admin-nav">
+            <a href="#dashboard" class="nav-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de bord</span>
+            </a>
+            <a href="#gallery-manager" class="nav-item">
+                <i class="fas fa-images"></i>
+                <span>Gestion Galerie</span>
+            </a>
+            <a href="#messages" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+                <span class="notification-badge" id="messageCount">0</span>
+            </a>
+            <a href="#settings" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+            <a href="index.html" class="nav-item" target="_blank">
+                <i class="fas fa-eye"></i>
+                <span>Voir le site</span>
+            </a>
+            <a href="#" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Admin Main Content -->
+    <div class="admin-main">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <h1 id="adminPageTitle">Tableau de bord</h1>
+            </div>
+            <div class="header-right">
+                <div class="admin-user" style="position: relative;">
+                    <img src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                        alt="Chef Proctor" id="adminUserAvatar">
+                    <label for="profileUploadInput" title="Modifier la photo (depuis PC/téléphone)" class="btn-admin-icon btn-admin-icon-sm" style="position: absolute; bottom: 0px; left: 25px; background: var(--primary-color); color: white; cursor: pointer; border: 2px solid white;">
+                        <i class="fas fa-camera" style="font-size: 0.8rem; margin: 0;"></i>
+                    </label>
+                    <input type="file" id="profileUploadInput" style="display: none;" accept="image/*">
+                    <span>Chef Proctor</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="admin-content" id="adminContent">
+            <!-- Dashboard View -->
+            <div class="dashboard-view admin-view active" id="dashboard">
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3 id="totalPhotos">0</h3>
+                        <p>Photos en galerie</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 id="dashboardMessageCount">0</h3>
+                        <p>Messages non lus</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3 id="upcomingEvents">0</h3>
+                        <p>Événements à venir</p>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <h3>Actions rapides</h3>
+                    <div class="action-buttons">
+                        <button class="btn-admin-primary" onclick="switchView('gallery-manager')">
+                            <i class="fas fa-plus-circle"></i>
+                            Ajouter des photos
+                        </button>
+                        <button class="btn-admin-secondary" onclick="alert('La gestion dynamique des services sera disponible dans une prochaine mise à jour.')">
+                            <i class="fas fa-edit"></i>
+                            Modifier les services
+                        </button>
+                        <button class="btn-admin-info" id="exportContactsBtn" onclick="exportContacts()">
+                            <i class="fas fa-download"></i>
+                            Exporter les contacts
+                        </button>
+                        <button class="btn-admin-warning" onclick="switchView('messages')">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                        </button>
+                    </div>
+                </div>
+
+                <div class="recent-uploads">
+                    <h3>Dernières photos ajoutées</h3>
+                    <div class="uploads-grid" id="recentUploads">
+                        <div class="no-photos">
+                            <i class="fas fa-images fa-3x"></i>
+                            <p>Aucune photo ajoutée récemment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Manager View -->
+            <div class="gallery-manager-view admin-view" id="gallery-manager">
+                <div class="upload-section">
+                    <h2>Ajouter des photos à la galerie</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Glissez-déposez vos photos ici ou</p>
+                        <input type="file" id="fileInput" multiple accept="image/*">
+                        <label for="fileInput" class="btn-admin-primary btn-admin-lg">
+                            <i class="fas fa-folder-open"></i>
+                            Parcourir les fichiers
+                        </label>
+                        <p class="upload-hint">Formats supportés: JPG, PNG, WebP. Max 5MB par image.</p>
+                    </div>
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <!-- Barre de progression -->
+                    </div>
+                </div>
+
+                <div class="gallery-controls">
+                    <div class="category-selector">
+                        <label for="photoCategory">Catégorie :</label>
+                        <select id="photoCategory">
+                            <option value="apero">Apéritifs</option>
+                            <option value="cocktails">Cocktails</option>
+                            <option value="mariage">Mariages</option>
+                            <option value="evenement">Événements</option>
+                        </select>
+                    </div>
+                    <div class="btn-admin-group">
+                        <button class="btn-admin-secondary" id="selectAllBtn">
+                            <i class="fas fa-check-square"></i> Tout sélectionner
+                        </button>
+                        <button class="btn-admin-danger" id="bulkDeleteBtn">
+                            <i class="fas fa-trash"></i> Supprimer la sélection
+                        </button>
+                        <button class="btn-admin-info" id="changeCategoryBtn" onclick="changeCategory()">
+                            <i class="fas fa-tags"></i> Changer catégorie
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-gallery-grid" id="adminGalleryGrid">
+                    <!-- Les photos de la galerie seront affichées ici -->
+                    <div class="no-photos-message">
+                        <i class="fas fa-images fa-4x"></i>
+                        <h3>Aucune photo dans la galerie</h3>
+                        <p>Commencez par ajouter des photos en utilisant la zone d'upload ci-dessus.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages View -->
+            <div class="messages-view admin-view" id="messages">
+                <div class="messages-header">
+                    <div class="messages-title">
+                        <h2>Messages des clients</h2>
+                        <div class="messages-stats">
+                            <span class="stat-badge total">
+                                <i class="fas fa-envelope"></i>
+                                <span id="totalMessages">0</span> messages
+                            </span>
+                            <span class="stat-badge unread">
+                                <i class="fas fa-envelope"></i>
+                                <span id="unreadMessages">0</span> non lus
+                            </span>
+                        </div>
+                    </div>
+                    <div class="messages-actions">
+                        <button class="btn-admin-secondary" id="refreshMessagesBtn">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                        <button class="btn-admin-primary" id="markAllReadBtn">
+                            <i class="fas fa-check-double"></i> Tout marquer comme lu
+                        </button>
+                        <button class="btn-admin-danger" id="deleteAllReadBtn">
+                            <i class="fas fa-trash"></i> Supprimer les lus
+                        </button>
+                    </div>
+                </div>
+
+                <div class="messages-filters">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="unread">Non lus</button>
+                    <button class="filter-btn" data-filter="today">Aujourd'hui</button>
+                    <button class="filter-btn" data-filter="week">Cette semaine</button>
+                </div>
+
+                <div class="messages-list" id="messagesList">
+                    <!-- Les messages seront chargés ici dynamiquement -->
+                    <div class="loading-messages">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Chargement des messages...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div class="settings-view admin-view" id="settings">
+                <h2>Paramètres du site</h2>
+                <form class="settings-form">
+                    <div class="form-group">
+                        <label for="siteName">Nom du site</label>
+                        <input type="text" id="siteName" value="Proctor Kitchen">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEmail">Email administrateur</label>
+                        <input type="email" id="adminEmail" value="contact@proctorkitchen.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="siteDescription">Description du site</label>
+                        <textarea id="siteDescription"
+                            rows="3">Traiteur d'exception pour vos événements spéciaux</textarea>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button type="submit" class="btn-admin-primary btn-admin-lg">
+                            <i class="fas fa-save"></i>
+                            Enregistrer les modifications
+                        </button>
+                        <button type="reset" class="btn-admin-secondary btn-admin-lg">
+                            <i class="fas fa-undo"></i>
+                            Réinitialiser
+                        </button>
+                        <button type="button" class="btn-admin-warning btn-admin-lg" id="clearCacheBtn">
+                            <i class="fas fa-broom"></i>
+                            Vider le cache
+                        </button>
+                        <button type="button" class="btn-admin-danger btn-admin-lg" id="resetSiteBtn">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Réinitialiser le site
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirmer la suppression</h3>
+            <p id="modalMessage">Êtes-vous sûr de vouloir supprimer ces photos ? Cette action est irréversible.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modalCancel">Annuler</button>
+                <button class="btn-danger" id="modalConfirm">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal" style="display: none; background-color: rgba(44, 62, 80, 0.95);">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="admin-logo" style="border: none; margin-bottom: 20px;">
+                <img src="logo.jpeg" alt="Proctor Kitchen" style="height: 80px;">
+                <h2 style="color: var(--primary-color);">Connexion Admin</h2>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="adminEmailInput" placeholder="Adresse email" required
+                        style="text-align: center; margin-bottom: 15px;">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="adminPassword" placeholder="Mot de passe" required
+                        style="text-align: center;">
+                </div>
+                <button type="submit" class="btn-admin-primary btn-admin-lg" style="width: 100%;">
+                    <i class="fas fa-lock"></i> Se connecter
+                </button>
+            </form>
+            <p id="loginError" style="color: #e74c3c; margin-top: 15px; display: none;">Identifiants incorrects</p>
+        </div>
+    </div>
+
+    <!-- Float Button for Quick Actions -->
+    <button class="btn-admin-float" id="quickActionsBtn" title="Actions rapides" onclick="toggleQuickActions()">
+        <i class="fas fa-bolt"></i>
+    </button>
+
+    <div class="float-actions-menu" id="floatActionsMenu">
+        <button class="btn-admin-icon" title="Ajouter une photo" onclick="switchView('gallery-manager')">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="btn-admin-icon" title="Nouveau message" onclick="switchView('messages')">
+            <i class="fas fa-envelope"></i>
+        </button>
+        <button class="btn-admin-icon" title="Statistiques" onclick="switchView('dashboard')">
+            <i class="fas fa-chart-bar"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-supabase.js"></script>
+</body>
+
+</html>

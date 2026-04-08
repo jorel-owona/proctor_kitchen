@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proctor Kitchen - Chef Cuisinier Événementiel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="logo.jpeg">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#home" class="logo">
+                <img src="logo.jpeg" alt="Proctor Kitchen Logo">
+                <span>PROCTOR <br>KITCHEN</span>
+            </a>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home">Accueil</a></li>
+                <li><a href="#about">À Propos</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#gallery">Galerie</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="admin.html" class="btn-admin"><i class="fas fa-lock"></i> Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1 class="animate-text">L'Art Culinaire et Événementiel</h1>
+                <p class="animate-text delay-1">Apéritifs raffinés • Cocktails créatifs • Réceptions de mariage •
+                    Événements d'exception</p>
+                <div class="hero-buttons animate-text delay-2">
+                    <a href="#contact" class="btn-primary">Réserver un événement</a>
+                    <a href="#gallery" class="btn-secondary">Voir la galerie</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-image">
+                    <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        alt="Cocktail raffiné">
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Le Chef <span class="highlight">Proctor</span></h2>
+                <p class="section-subtitle">Passion, Créativité & Excellence</p>
+            </div>
+            <div class="about-content">
+                <div class="about-image animate-left">
+                    <div class="image-frame">
+                        <img src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                            alt="Chef Proctor" id="chefProfileImg">
+                        <div class="frame-decoration"></div>
+                    </div>
+                </div>
+                <div class="about-text animate-right">
+                    <p>Avec plus de 15 ans d'expérience dans la haute gastronomie, le Chef Proctor transforme chaque
+                        événement en une expérience culinaire mémorable.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <h3 class="counter" data-target="250">0</h3>
+                            <p>Événements réalisés</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3 class="counter" data-target="50">0</h3>
+                            <p>Mariages célébrés</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3 class="counter" data-target="100">0</h3>
+                            <p>Clients satisfaits</p>
+                        </div>
+                    </div>
+                    <a href="#contact" class="btn-primary">Contacter le chef</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="section services">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nos <span class="highlight">Services</span></h2>
+                <p class="section-subtitle">Des prestations sur mesure pour chaque occasion</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card animate-up">
+                    <div class="service-icon">
+                        <i class="fas fa-wine-glass-alt"></i>
+                    </div>
+                    <h3>Apéritifs Raffinés</h3>
+                    <p>Canapés créatifs, mises en bouche et accompagnements pour inaugurations, vernissages et cocktails
+                        dînatoires.</p>
+                </div>
+                <div class="service-card animate-up delay-1">
+                    <div class="service-icon">
+                        <i class="fas fa-cocktail"></i>
+                    </div>
+                    <h3>Cocktails Signature</h3>
+                    <p>Créations exclusives, bar à cocktails personnalisé, mixologie moderne avec produits locaux et de
+                        saison.</p>
+                </div>
+                <div class="service-card animate-up delay-2">
+                    <div class="service-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Réceptions de Mariage</h3>
+                    <p>Menus personnalisés, buffet élégant ou service à l'assiette pour faire de votre jour J un moment
+                        inoubliable.</p>
+                </div>
+                <div class="service-card animate-up delay-3">
+                    <div class="service-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Événements d'Entreprise</h3>
+                    <p>Cocktails, séminaires, lancements de produits avec une offre culinaire adaptée à votre image de
+                        marque.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section gallery">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Galerie <span class="highlight">Photos</span></h2>
+                <p class="section-subtitle">Un aperçu de nos réalisations</p>
+            </div>
+            <div class="gallery-filters">
+                <button class="filter-btn active" data-filter="all">Tout voir</button>
+                <button class="filter-btn" data-filter="apero">Apéritifs</button>
+                <button class="filter-btn" data-filter="cocktails">Cocktails</button>
+                <button class="filter-btn" data-filter="mariage">Mariages</button>
+                <button class="filter-btn" data-filter="evenement">Événements</button>
+            </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Les images seront chargées dynamiquement depuis l'admin -->
+                <div id="gallery-empty-state"
+                    style="display: none; text-align: center; width: 100%; padding: 40px; color: #7f8c8d;">
+                    <i class="fas fa-images fa-3x" style="margin-bottom: 15px; display: block;"></i>
+                    <p>La galerie est vide pour le moment.</p>
+                </div>
+            </div>
+            <div class="gallery-loading" id="galleryLoading">
+                Chargement des photos...
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Contact & <span class="highlight">Devis</span></h2>
+                <p class="section-subtitle">Discutons de votre prochain événement</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info animate-left">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Téléphone</h4>
+                            <p>+237 6 95 96 53 87</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <a href="mailto:jorelowona413@gmail.com">proctorKichen</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Localisation</h4>
+                            <p>Youndé Efoulan Pont</p>
+                        </div>
+                    </div>
+
+                    <div class="map-container">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1389.3501688771184!2d11.503547345654567!3d3.827678081559086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x108bd01fdb089fed%3A0xb0fa4ccc1d1f5be3!2sEfoulan%20Pont%2C%20Yaound%C3%A9%2C%20Cameroun!5e0!3m2!1sfr!2sus!4v1768617996168!5m2!1sfr!2sus"
+                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+
+                </div>
+
+                <form class="contact-form animate-right" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Votre nom" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Votre email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" placeholder="Votre téléphone">
+                    </div>
+                    <div class="form-group">
+                        <select name="event_type" required>
+                            <option value="">Type d'événement</option>
+                            <option value="apero">Apéritif/Cocktail</option>
+                            <option value="mariage">Mariage</option>
+                            <option value="entreprise">Événement d'entreprise</option>
+                            <option value="prive">Événement privé</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" placeholder="Votre message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logo.jpeg" alt="Proctor Kitchen">
+                    <h3>PROCTOR KITCHEN</h3>
+                    <p>L'excellence culinaire au service de vos événements</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <a href="#home">Accueil</a>
+                    <a href="#services">Services</a>
+                    <a href="#gallery">Galerie</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Proctor Kitchen. Tous droits réservés.</p>
+                <p><a href="admin.html" class="admin-link">Espace Administrateur</a></p>
+            </div>
+        </div>
+    </footer>
+    <!-- Lightbox Modal -->
+    <div id="publicLightbox" class="lightbox" style="display: none;">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+        <div id="lightboxCaption"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
