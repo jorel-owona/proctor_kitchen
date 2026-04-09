@@ -11,6 +11,20 @@ document.addEventListener('DOMContentLoaded', async function () {
     const main = document.querySelector('.admin-main');
     const adminContent = document.querySelector('.admin-body');
 
+    // ===== MOBILE NAVIGATION LOGIC =====
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebarToggle && sidebar && sidebarOverlay) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+        });
+    }
+
     // Initialiser Supabase (sécurisé, clé publique)
     window.supabaseClient = initSupabase();
 
@@ -354,6 +368,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             const viewId = href.substring(1);
             window.switchView(viewId);
+            
+            // Auto-close sidebar on mobile
+            if (sidebar) {
+                sidebar.classList.remove('active');
+            }
         });
     });
 
