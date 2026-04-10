@@ -312,15 +312,80 @@ section {
 
 .admin-gallery-item {
     position: relative;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
-    height: 120px;
+    height: 180px; /* Augmenté pour accueillir les commandes */
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.admin-gallery-item.selected {
+    border-color: var(--primary-color);
+    transform: scale(0.95);
 }
 
 .admin-gallery-item img {
     width: 100%;
-    height: 100%;
+    height: 120px; /* Image prend une partie, le reste pour les contrôles */
     object-fit: cover;
+}
+
+.photo-select-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+}
+
+.photo-item-checkbox {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.gallery-info-compact {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: white;
+}
+
+.photo-event-mini-select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    background: #fdfdfd;
+}
+
+.btn-icon-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.btn-icon-delete:hover {
+    background: #c0392b;
+    transform: scale(1.1);
 }
 
 .uploads-grid {
@@ -1374,7 +1439,52 @@ section {
 
 .message-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+}
+
+.message-actions .btn-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: #f8f9fa;
+    color: var(--secondary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.message-actions .mark-read-btn {
+    color: var(--primary-color);
+}
+.message-actions .mark-read-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(212, 167, 98, 0.3);
+}
+
+.message-actions .reply-btn {
+    color: #3498db;
+}
+.message-actions .reply-btn:hover {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.message-actions .delete-btn {
+    color: #e74c3c;
+}
+.message-actions .delete-btn:hover {
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .message-content {
@@ -1490,9 +1600,67 @@ section {
     cursor: pointer;
 }
 
-#lightboxCaption {
-    margin-top: 15px;
-    color: #fff;
-    font-size: 1.2rem;
+/* ===== GALLERY MANAGER REFINEMENTS ===== */
+.gallery-controls label {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.gallery-controls select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4A762' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+    padding-right: 45px !important;
+    border: 2px solid #f0f0f0;
+    font-weight: 500;
+}
+
+.photo-event-mini-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4A762' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    padding-right: 30px !important;
+    background-color: white !important;
+    border: 1px solid #eee !important;
+    color: var(--secondary-color);
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.photo-details {
+    padding: 12px;
+    background: #fff;
+    border-top: 1px solid #f9f9f9;
+}
+
+.btn-admin-group {
+    margin-top: 25px;
+    gap: 10px;
+}
+
+.btn-admin-group button {
+    border-radius: 8px !important; /* Force rounded corners even in group */
+    border: none !important;
+}
+
+.no-photos-message {
+    grid-column: 1 / -1;
     text-align: center;
+    padding: 60px;
+    background: white;
+    border-radius: var(--radius);
+    color: var(--gray-color);
+}
+
+.no-photos-message i {
+    color: #eee;
+    margin-bottom: 20px;
 }

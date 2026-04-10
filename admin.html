@@ -27,6 +27,10 @@
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Tableau de bord</span>
             </a>
+            <a href="#projects-manager" class="nav-item">
+                <i class="fas fa-folder-open"></i>
+                <span>Gestion Événements</span>
+            </a>
             <a href="#gallery-manager" class="nav-item">
                 <i class="fas fa-images"></i>
                 <span>Gestion Galerie</span>
@@ -139,6 +143,58 @@
                 </div>
             </div>
 
+            <!-- Projects Manager View -->
+            <div class="projects-manager-view admin-view" id="projects-manager">
+                <div class="projects-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+                    <h2>Gestion des Événements / Albums</h2>
+                    <button class="btn-admin-primary" onclick="showNewProjectForm()">
+                        <i class="fas fa-plus"></i> Créer un événement
+                    </button>
+                </div>
+
+                <!-- Formulaire Nouvel Événement -->
+                <div id="newProjectForm" class="stat-card" style="display: none; margin-bottom: 30px; text-align: left;">
+                    <h3>Détails de l'événement</h3>
+                    <form id="addProjectForm" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="projectName">Nom de l'événement</label>
+                            <input type="text" id="projectName" required placeholder="ex: Mariage de Julie & Marc">
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div class="form-group">
+                                <label for="projectDate">Date de l'événement</label>
+                                <input type="date" id="projectDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="projectCategory">Catégorie</label>
+                                <select id="projectCategory" required>
+                                    <option value="apero">Apéritifs</option>
+                                    <option value="cocktails">Cocktails</option>
+                                    <option value="mariage">Mariages</option>
+                                    <option value="evenement">Événements</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectDescription">Petite description prédéfinie</label>
+                            <textarea id="projectDescription" rows="3" placeholder="Décrivez brièvement cet événement pour vos clients..."></textarea>
+                        </div>
+                        <div class="btn-admin-group">
+                            <button type="submit" class="btn-admin-primary">Enregistrer l'événement</button>
+                            <button type="button" class="btn-admin-secondary" onclick="hideNewProjectForm()">Annuler</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="projects-list-grid" id="projectsList">
+                    <!-- Les événements seront chargés ici -->
+                    <div class="loading-projects" style="text-align: center; padding: 40px; color: var(--gray-color);">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p>Chargement des événements...</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Gallery Manager View -->
             <div class="gallery-manager-view admin-view" id="gallery-manager">
                 <div class="upload-section">
@@ -158,15 +214,24 @@
                     </div>
                 </div>
 
-                <div class="gallery-controls">
-                    <div class="category-selector">
-                        <label for="photoCategory">Catégorie :</label>
-                        <select id="photoCategory">
-                            <option value="apero">Apéritifs</option>
-                            <option value="cocktails">Cocktails</option>
-                            <option value="mariage">Mariages</option>
-                            <option value="evenement">Événements</option>
-                        </select>
+                <div class="gallery-controls" style="background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 30px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: flex-end;">
+                        <div class="category-selector">
+                            <label for="photoEvent" style="display: block; margin-bottom: 8px; font-weight: 600;">Lier à un événement :</label>
+                            <select id="photoEvent">
+                                <option value="">Photo individuelle (sans message)</option>
+                                <!-- Les projets seront chargés ici -->
+                            </select>
+                        </div>
+                        <div class="category-selector">
+                            <label for="photoCategory" style="display: block; margin-bottom: 8px; font-weight: 600;">Ou Catégorie directe :</label>
+                            <select id="photoCategory">
+                                <option value="apero">Apéritifs</option>
+                                <option value="cocktails">Cocktails</option>
+                                <option value="mariage">Mariages</option>
+                                <option value="evenement">Événements</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="btn-admin-group">
                         <button class="btn-admin-secondary" id="selectAllBtn">
@@ -187,6 +252,26 @@
                         <i class="fas fa-images fa-4x"></i>
                         <h3>Aucune photo dans la galerie</h3>
                         <p>Commencez par ajouter des photos en utilisant la zone d'upload ci-dessus.</p>
+                    </div>
+                </div>
+
+                <!-- Barre flottante pour Actions Groupées (Masquée par défaut) -->
+                <div id="bulkActionsBar" class="bulk-floating-bar" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1001; display: flex; align-items: center; gap: 20px; border: 2px solid var(--primary-color);">
+                    <div class="bulk-info" style="font-weight: 700; color: var(--secondary-color); white-space: nowrap;">
+                        <span id="selectedCount">0</span> photo(s)
+                    </div>
+                    <div class="bulk-divider" style="width: 2px; height: 30px; background: #eee;"></div>
+                    <div class="bulk-controls" style="display: flex; gap: 10px; align-items: center;">
+                        <select id="bulkEventSelect" style="padding: 10px 15px; border-radius: 25px; border: 1px solid #ddd; outline: none; background: #f9f9f9;">
+                            <option value="">Déplacer vers l'événement...</option>
+                            <!-- Changé dynamiquement -->
+                        </select>
+                        <button class="btn-admin-primary" onclick="applyBulkMove()" style="padding: 10px 20px; border-radius: 25px; font-weight: 700;">
+                            <i class="fas fa-check-circle"></i> Appliquer
+                        </button>
+                        <button class="btn-admin-secondary" onclick="clearBulkSelection()" style="padding: 10px 20px; border-radius: 25px;">
+                            Annuler
+                        </button>
                     </div>
                 </div>
             </div>

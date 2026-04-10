@@ -266,7 +266,7 @@ async function toggleMessageRead(messageId, element) {
 
         const newReadStatus = !message.is_read;
 
-        const { error } = await supabase
+        const { error } = await msgSupabase
             .from('messages')
             .update({ is_read: newReadStatus })
             .eq('id', messageId);
@@ -435,7 +435,7 @@ function setupMessageButtons() {
             deleteReadBtn.disabled = true;
 
             try {
-                const { error } = await supabase
+                const { error } = await msgSupabase
                     .from('messages')
                     .delete()
                     .in('id', readMessages.map(m => m.id));

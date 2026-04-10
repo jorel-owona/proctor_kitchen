@@ -78,20 +78,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const filterValue = this.getAttribute('data-filter');
 
-            // Filtrer les éléments de la galerie
-            galleryItems.forEach(item => {
+            // Filtrer les éléments de la galerie (Projets et Photos individuelles)
+            const sections = document.querySelectorAll('.project-section, .loose-photos-header, .project-photos-grid');
+            const individualItems = document.querySelectorAll('.gallery-item');
+
+            sections.forEach(section => {
+                const category = section.getAttribute('data-category');
+                if (filterValue === 'all' || category === filterValue || section.classList.contains('project-photos-grid')) {
+                    section.style.display = section.classList.contains('project-photos-grid') ? 'grid' : 'block';
+                    if (section.classList.contains('project-section')) {
+                         section.style.opacity = '1';
+                         section.style.transform = 'translateY(0)';
+                    }
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+
+            individualItems.forEach(item => {
                 if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
                     item.style.display = 'block';
                     setTimeout(() => {
                         item.style.opacity = '1';
                         item.style.transform = 'scale(1)';
-                    }, 100);
+                    }, 50);
                 } else {
                     item.style.opacity = '0';
                     item.style.transform = 'scale(0.8)';
                     setTimeout(() => {
                         item.style.display = 'none';
-                    }, 300);
+                    }, 200);
                 }
             });
         });
@@ -363,13 +379,14 @@ ${data.message}
         }
 
         try {
-            // 1. Load existing images
-            const { data: images, error } = await supabase
-                .from('gallery')
-                .select('*')
-                .order('created_at', { ascending: false });
+            // 1. Load projects and existing images
+            const [{ data: projects, error: projError }, { data: images, error: imagesError }] = await Promise.all([
+                supabase.from('projects').select('*').order('event_date', { ascending: false }),
+                supabase.from('gallery').select('*').order('created_at', { ascending: false })
+            ]);
 
-            if (error) throw error;
+            if (projError) throw projError;
+            if (imagesError) throw imagesError;
 
             // Extract profile photo
             const profilePhoto = images.find(img => img.category === 'profil');
@@ -384,14 +401,50 @@ ${data.message}
             if (galleryLoading) galleryLoading.style.display = 'none';
 
             // Clear grid except empty state
-            const oldItems = galleryGrid.querySelectorAll('.gallery-item');
+            const oldItems = galleryGrid.querySelectorAll('.gallery-item, .project-section');
             oldItems.forEach(el => el.remove());
 
-            if (!galleryImages || galleryImages.length === 0) {
+            if (!images || images.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
             } else {
                 if (emptyState) emptyState.style.display = 'none';
-                galleryImages.forEach(image => addImageToGallery(image, galleryGrid));
+                
+                // Grouping Logic
+                const photosByProject = {};
+                const loosePhotos = [];
+
+                images.forEach(img => {
+                    if (img.category === 'profil') return;
+                    if (img.project_id) {
+                        if (!photosByProject[img.project_id]) photosByProject[img.project_id] = [];
+                        photosByProject[img.project_id].push(img);
+                    } else {
+                        loosePhotos.push(img);
+                    }
+                });
+
+                // 1. Display Projects (Albums)
+                projects.forEach(project => {
+                    const projectPhotos = photosByProject[project.id];
+                    if (projectPhotos && projectPhotos.length > 0) {
+                        addProjectToGallery(project, projectPhotos, galleryGrid);
+                    }
+                });
+
+                // 2. Display Individual Photos (Those not in a project)
+                if (loosePhotos.length > 0) {
+                    const looseHeader = document.createElement('div');
+                    looseHeader.className = 'project-section-header loose-photos-header';
+                    looseHeader.setAttribute('data-category', 'all');
+                    looseHeader.innerHTML = `<h3 style="margin: 40px 0 20px; font-size: 1.5rem; color: var(--secondary-color); border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 5px;">Autres Réalisations</h3>`;
+                    galleryGrid.appendChild(looseHeader);
+                    
+                    const looseGrid = document.createElement('div');
+                    looseGrid.className = 'project-photos-grid';
+                    galleryGrid.appendChild(looseGrid);
+
+                    loosePhotos.forEach(image => addImageToGallery(image, looseGrid));
+                }
             }
 
             // 2. Realtime
@@ -431,6 +484,41 @@ ${data.message}
             console.error("Erreur chargement galerie:", error);
             if (galleryLoading) galleryLoading.style.display = 'none';
         }
+    }
+
+    function addProjectToGallery(project, photos, container) {
+        const section = document.createElement('div');
+        section.className = 'project-section animate-up';
+        section.setAttribute('data-category', project.category);
+        section.style.marginBottom = '60px';
+        section.style.width = '100%';
+
+        const formattedDate = new Date(project.event_date).toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long'
+        });
+
+        section.innerHTML = `
+            <div class="project-header" style="margin-bottom: 40px; text-align: left; position: relative; padding-bottom: 20px;">
+                <div class="project-meta" style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                    <span class="project-category-tag" style="background: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">${project.category}</span>
+                    <span class="project-date" style="color: #666; font-size: 0.9rem; letter-spacing: 1px;">
+                        <i class="far fa-calendar-alt"></i> ${formattedDate}
+                    </span>
+                </div>
+                <h3 class="project-title" style="font-size: 2.2rem; color: var(--secondary-color); font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 15px;">${project.name}</h3>
+                ${project.description ? `<p class="project-description" style="color: #555; max-width: 800px; line-height: 1.8; font-size: 1.1rem; font-style: italic; border-left: 3px solid #eee; padding-left: 20px;">"${project.description}"</p>` : ''}
+                <div class="project-divider" style="position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: var(--primary-color);"></div>
+            </div>
+            <div class="project-photos-grid">
+                <!-- Photos follow -->
+            </div>
+        `;
+
+        const photoGrid = section.querySelector('.project-photos-grid');
+        photos.forEach(photo => addImageToGallery(photo, photoGrid));
+        
+        container.appendChild(section);
     }
 
     function addImageToGallery(image, container, prepend = false) {

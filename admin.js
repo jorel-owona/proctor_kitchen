@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Charger les statistiques et la galerie
         loadDashboardStats();
+        loadProjects(); // Nouveau : Charger les événements
         loadGalleryFromDB();
         loadRecentUploads(); // Nouveau : Charger widget dashboard
         initSettings();      // Nouveau : Gestion paramètres
@@ -97,6 +98,236 @@ document.addEventListener('DOMContentLoaded', async function () {
             window.initMessagesSystem();
         }
     }
+
+    // ===== PROJECT MANAGEMENT =====
+    window.showNewProjectForm = () => {
+        document.getElementById('newProjectForm').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('newProjectForm').offsetTop - 100, behavior: 'smooth' });
+    };
+
+    window.hideNewProjectForm = () => {
+        document.getElementById('newProjectForm').style.display = 'none';
+        document.getElementById('addProjectForm').reset();
+    };
+
+    async function loadProjects() {
+        if (!window.supabaseClient) return;
+
+        const projectsList = document.getElementById('projectsList');
+        const photoEventSelect = document.getElementById('photoEvent');
+        
+        try {
+            const { data: projects, error } = await window.supabaseClient
+                .from('projects')
+                .select('*')
+                .order('event_date', { ascending: false });
+
+            if (error) throw error;
+
+            // Remplir le sélecteur dans l'upload
+            if (photoEventSelect) {
+                photoEventSelect.innerHTML = '<option value="">Photo individuelle (sans message)</option>';
+                const bulkSelect = document.getElementById('bulkEventSelect');
+                if (bulkSelect) bulkSelect.innerHTML = '<option value="">Déplacer vers l\'événement...</option>';
+
+                projects.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.dataset.category = p.category;
+                    option.textContent = `${p.name} (${new Date(p.event_date).toLocaleDateString()})`;
+                    
+                    if (photoEventSelect) photoEventSelect.appendChild(option.cloneNode(true));
+                    if (bulkSelect) bulkSelect.appendChild(option.cloneNode(true));
+                });
+            }
+
+            // Remplir la liste de gestion
+            if (projectsList) {
+                if (projects.length === 0) {
+                    projectsList.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--gray-color);">Aucun événement créé pour le moment.</div>';
+                    return;
+                }
+
+                projectsList.innerHTML = '';
+                projects.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.style.textAlign = 'left';
+                    card.style.borderLeft = '5px solid var(--primary-color)';
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h4 style="margin-bottom: 5px; color: var(--secondary-color);">${p.name}</h4>
+                                <p style="font-size: 0.85rem; color: var(--gray-color); margin-bottom: 10px;">
+                                    <i class="far fa-calendar-alt"></i> ${new Date(p.event_date).toLocaleDateString()} | 
+                                    <i class="fas fa-tag"></i> ${p.category}
+                                </p>
+                                <p style="font-size: 0.9rem; line-height: 1.4;">${p.description || 'Pas de description.'}</p>
+                            </div>
+                            <button class="btn-admin-icon btn-admin-icon-sm" onclick="deleteProject('${p.id}')" style="color: var(--accent-color);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    projectsList.appendChild(card);
+                });
+            }
+
+        } catch (err) {
+            console.error('Erreur loading projects:', err);
+        }
+    }
+
+    // Gérer l'ajout d'un projet
+    const addProjectForm = document.getElementById('addProjectForm');
+    if (addProjectForm) {
+        addProjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const projectData = {
+                name: document.getElementById('projectName').value,
+                event_date: document.getElementById('projectDate').value,
+                category: document.getElementById('projectCategory').value,
+                description: document.getElementById('projectDescription').value
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('projects')
+                    .insert([projectData]);
+
+                if (error) throw error;
+
+                showAdminNotification('Événement créé avec succès !', 'success');
+                hideNewProjectForm();
+                loadProjects();
+            } catch (err) {
+                console.error('Erreur création projet:', err);
+                showAdminNotification('Erreur lors de la création.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Enregistrer l\'événement';
+            }
+        });
+    }
+
+    window.deleteProject = async (id) => {
+        if (!confirm('Voulez-vous vraiment supprimer cet événement ? Les photos liées resteront en galerie mais ne seront plus groupées.')) return;
+
+        try {
+            const { error } = await window.supabaseClient
+                .from('projects')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            showAdminNotification('Événement supprimé.', 'success');
+            loadProjects();
+        } catch (err) {
+            console.error('Erreur delete project:', err);
+            showAdminNotification('Erreur lors de la suppression.', 'error');
+        }
+    };
+
+    // ===== BULK ACTIONS LOGIC =====
+    let selectedPhotoIds = [];
+
+    window.togglePhotoSelection = () => {
+        // Utiliser .value car c'est là que l'ID est stocké dans le HTML
+        const checkboxes = document.querySelectorAll('.photo-item-checkbox:checked');
+        selectedPhotoIds = Array.from(checkboxes)
+                                .map(cb => cb.value)
+                                .filter(id => id && id !== 'undefined');
+        
+        const bulkBar = document.getElementById('bulkActionsBar');
+        const countSpan = document.getElementById('selectedCount');
+        
+        if (selectedPhotoIds.length > 0) {
+            bulkBar.style.display = 'flex';
+            countSpan.textContent = selectedPhotoIds.length;
+        } else {
+            bulkBar.style.display = 'none';
+        }
+    };
+
+    window.clearBulkSelection = () => {
+        const checkboxes = document.querySelectorAll('.photo-item-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
+        selectedPhotoIds = [];
+        document.getElementById('bulkActionsBar').style.display = 'none';
+    };
+
+    window.applyBulkMove = async () => {
+        const targetProjectId = document.getElementById('bulkEventSelect').value;
+        if (!targetProjectId) {
+            showAdminNotification('Veuillez choisir un événement de destination.', 'info');
+            return;
+        }
+
+        if (selectedPhotoIds.length === 0) return;
+
+        const confirmBtn = document.querySelector('#bulkActionsBar .btn-admin-primary');
+        const originalText = confirmBtn.innerHTML;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+
+        try {
+            // Récupérer la catégorie du projet cible pour synchroniser les photos
+            const { data: project } = await window.supabaseClient
+                .from('projects')
+                .select('category')
+                .eq('id', targetProjectId)
+                .single();
+
+            const { error } = await window.supabaseClient
+                .from('gallery')
+                .update({ 
+                    project_id: targetProjectId,
+                    category: project ? project.category : 'evenement'
+                })
+                .in('id', selectedPhotoIds);
+
+            if (error) throw error;
+
+            showAdminNotification(`${selectedPhotoIds.length} photos déplacées avec succès !`, 'success');
+            clearBulkSelection();
+            loadGalleryFromDB();
+        } catch (err) {
+            console.error('Erreur bulk move:', err);
+            showAdminNotification('Erreur lors du déplacement.', 'error');
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    };
+
+    // Mises à jour individuelles
+    window.updatePhotoProject = async (photoId, projectId) => {
+        try {
+            let categoryUpdate = {};
+            if (projectId) {
+                const { data: project } = await window.supabaseClient.from('projects').select('category').eq('id', projectId).single();
+                if (project) categoryUpdate = { category: project.category };
+            }
+
+            const { error } = await window.supabaseClient
+                .from('gallery')
+                .update({ project_id: projectId || null, ...categoryUpdate })
+                .eq('id', photoId);
+
+            if (error) throw error;
+            showAdminNotification('Photo mise à jour.', 'success');
+            // Pas besoin de recharger toute la vue pour un changement unique si on veut garder de la fluidité
+        } catch (err) {
+            console.error('Erreur update photo project:', err);
+            showAdminNotification('Erreur de mise à jour.', 'error');
+        }
+    };
 
     // ... (Navigation logic stays same) ...
 
@@ -327,6 +558,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Mettre à jour le titre
         const viewTitles = {
             'dashboard': 'Tableau de bord',
+            'projects-manager': 'Gestion des Événements',
             'gallery-manager': 'Gestion de la galerie',
             'messages': 'Messages',
             'settings': 'Paramètres'
@@ -418,10 +650,37 @@ document.addEventListener('DOMContentLoaded', async function () {
             handleFiles(this.files);
         });
 
-        function handleFiles(files) {
+        async function handleFiles(files) {
             if (files.length === 0) return;
             const validFiles = [...files].filter(file => file.type.match('image.*'));
-            validFiles.forEach(uploadFileToSupabase);
+            
+            try {
+                // 1. Récupérer les titres existants pour filtrer les doublons
+                const { data: existing, error } = await window.supabaseClient
+                    .from('gallery')
+                    .select('title');
+                
+                if (error) throw error;
+                
+                const existingTitles = new Set(existing.map(item => item.title));
+                const filesToUpload = validFiles.filter(file => {
+                    if (existingTitles.has(file.name)) {
+                        console.warn(`Le fichier ${file.name} existe déjà et sera ignoré.`);
+                        showAdminNotification(`"${file.name}" est déjà présent (doublon ignoré).`, 'info');
+                        return false;
+                    }
+                    return true;
+                });
+
+                // 2. Lancer les uploads
+                for (const file of filesToUpload) {
+                    await uploadFileToSupabase(file);
+                }
+            } catch (err) {
+                console.error('Erreur filtrage doublons:', err);
+                // Si erreur, on tente quand même l'upload sans filtre
+                validFiles.forEach(uploadFileToSupabase);
+            }
         }
     }
 
@@ -434,7 +693,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            const category = document.getElementById('photoCategory').value || 'evenement';
+            
+            // Nouveau : Récupérer le projet lié
+            const projectSelect = document.getElementById('photoEvent');
+            const projectId = projectSelect?.value || null;
+            
+            // Si un projet est sélectionné, sa catégorie prime
+            let category = document.getElementById('photoCategory').value || 'evenement';
+            if (projectId && projectSelect.selectedOptions[0]) {
+                category = projectSelect.selectedOptions[0].dataset.category || category;
+            }
 
             // 1. Upload Storage
             const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
@@ -454,13 +722,15 @@ document.addEventListener('DOMContentLoaded', async function () {
                 .insert([{
                     image_url: publicUrl,
                     category: category,
-                    title: file.name
+                    title: file.name,
+                    project_id: projectId // Nouveau : lien vers le projet
                 }]);
 
             if (dbError) throw dbError;
 
             showAdminNotification(`Photo "${file.name}" ajoutée !`, 'success');
             loadGalleryFromDB(); // Rafraîchir
+            loadProjects();      // Rafraîchir sélecteurs
 
         } catch (error) {
             console.error('Erreur upload:', error);
@@ -504,14 +774,24 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             adminGalleryGrid.innerHTML = '';
             photos.forEach(photo => {
+                const isSelected = selectedPhotoIds.includes(photo.id);
                 const item = document.createElement('div');
-                item.className = 'admin-gallery-item';
+                item.className = `admin-gallery-item ${isSelected ? 'selected' : ''}`;
                 item.innerHTML = `
+                    <div class="photo-select-checkbox">
+                        <input type="checkbox" class="photo-item-checkbox gallery-checkbox" value="${photo.id}" ${isSelected ? 'checked' : ''} onchange="togglePhotoSelection()">
+                    </div>
                     <img src="${photo.image_url}" alt="${photo.title || 'Photo'}">
-                    <input type="checkbox" class="gallery-checkbox" value="${photo.id}">
-                    <div class="gallery-info" style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.5); color:white; font-size:10px; padding:2px;">${photo.category}</div>
-                    <div class="gallery-actions" style="position:absolute; right:5px; top:5px; display:flex; gap:5px;">
-                        <button class="btn-small btn-delete" onclick="deletePhoto('${photo.id}')"><i class="fas fa-trash"></i></button>
+                    <div class="photo-details">
+                        <select class="photo-event-mini-select" onchange="updatePhotoProject('${photo.id}', this.value)">
+                            <option value="">Aucun événement</option>
+                            ${Array.from(document.getElementById('photoEvent').options).slice(1).map(opt => 
+                                `<option value="${opt.value}" ${photo.project_id === opt.value ? 'selected' : ''}>${opt.text}</option>`
+                            ).join('')}
+                        </select>
+                        <button class="btn-icon-delete" onclick="deletePhoto('${photo.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 `;
                 adminGalleryGrid.appendChild(item);
