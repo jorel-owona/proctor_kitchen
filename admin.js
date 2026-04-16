@@ -108,6 +108,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.hideNewProjectForm = () => {
         document.getElementById('newProjectForm').style.display = 'none';
         document.getElementById('addProjectForm').reset();
+        document.getElementById('editProjectId').value = '';
+        document.getElementById('projectFormTitle').textContent = 'Détails de l\'événement';
+        document.getElementById('projectSubmitBtn').textContent = 'Enregistrer l\'événement';
     };
 
     async function loadProjects() {
@@ -164,9 +167,14 @@ document.addEventListener('DOMContentLoaded', async function () {
                                 </p>
                                 <p style="font-size: 0.9rem; line-height: 1.4;">${p.description || 'Pas de description.'}</p>
                             </div>
-                            <button class="btn-admin-icon btn-admin-icon-sm" onclick="deleteProject('${p.id}')" style="color: var(--accent-color);">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-admin-icon btn-admin-icon-sm" onclick="editProject('${p.id}')" style="color: var(--primary-color);" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-admin-icon btn-admin-icon-sm" onclick="deleteProject('${p.id}')" style="color: var(--accent-color);" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                     projectsList.appendChild(card);
@@ -178,12 +186,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Gérer l'ajout d'un projet
+    // Gérer l'ajout ou la modification d'un projet
     const addProjectForm = document.getElementById('addProjectForm');
     if (addProjectForm) {
         addProjectForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
+            const editId = document.getElementById('editProjectId').value;
             
             const projectData = {
                 name: document.getElementById('projectName').value,
@@ -193,27 +202,75 @@ document.addEventListener('DOMContentLoaded', async function () {
             };
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+            submitBtn.innerHTML = editId ? '<i class="fas fa-spinner fa-spin"></i> Mise à jour...' : '<i class="fas fa-spinner fa-spin"></i> Création...';
 
             try {
-                const { error } = await window.supabaseClient
-                    .from('projects')
-                    .insert([projectData]);
+                if (editId) {
+                    // Mode ÉDITION
+                    const { error } = await window.supabaseClient
+                        .from('projects')
+                        .update(projectData)
+                        .eq('id', editId);
 
-                if (error) throw error;
+                    if (error) throw error;
+                    showAdminNotification('Événement mis à jour avec succès !', 'success');
+                    
+                    // Optionnel: Mettre à jour aussi la catégorie des photos liées
+                    await window.supabaseClient
+                        .from('gallery')
+                        .update({ category: projectData.category })
+                        .eq('project_id', editId);
+                } else {
+                    // Mode CRÉATION
+                    const { error } = await window.supabaseClient
+                        .from('projects')
+                        .insert([projectData]);
 
-                showAdminNotification('Événement créé avec succès !', 'success');
+                    if (error) throw error;
+                    showAdminNotification('Événement créé avec succès !', 'success');
+                }
+
                 hideNewProjectForm();
                 loadProjects();
             } catch (err) {
-                console.error('Erreur création projet:', err);
-                showAdminNotification('Erreur lors de la création.', 'error');
+                console.error('Erreur projet:', err);
+                showAdminNotification('Erreur lors de l\'opération.', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Enregistrer l\'événement';
+                submitBtn.innerHTML = editId ? 'Mettre à jour' : 'Enregistrer l\'événement';
             }
         });
     }
+
+    window.editProject = async (id) => {
+        try {
+            const { data: project, error } = await window.supabaseClient
+                .from('projects')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+
+            // Pré-remplir le formulaire
+            document.getElementById('editProjectId').value = project.id;
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectDate').value = project.event_date;
+            document.getElementById('projectCategory').value = project.category;
+            document.getElementById('projectDescription').value = project.description || '';
+
+            // Changer UI
+            document.getElementById('projectFormTitle').textContent = 'Modifier l\'événement';
+            document.getElementById('projectSubmitBtn').textContent = 'Mettre à jour';
+            
+            // Afficher
+            window.showNewProjectForm();
+            
+        } catch (err) {
+            console.error('Erreur edit project:', err);
+            showAdminNotification('Erreur lors de la récupération des données.', 'error');
+        }
+    };
 
     window.deleteProject = async (id) => {
         if (!confirm('Voulez-vous vraiment supprimer cet événement ? Les photos liées resteront en galerie mais ne seront plus groupées.')) return;

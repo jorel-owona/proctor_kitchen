@@ -624,6 +624,74 @@ section {
     .admin-content {
         padding: 20px;
     }
+
+    /* Amélioration Barre Flottante sur Mobile */
+    .bulk-floating-bar {
+        width: 95% !important;
+        flex-direction: column !important;
+        border-radius: 20px !important;
+        padding: 15px !important;
+        bottom: 10px !important;
+        gap: 10px !important;
+    }
+
+    .bulk-controls {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .bulk-controls select, 
+    .bulk-controls button {
+        width: 100% !important;
+    }
+
+    .bulk-divider {
+        display: none !important;
+    }
+}
+
+/* Styles pour la barre d'actions groupées (déplacés depuis inline) */
+.bulk-floating-bar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.bulk-info {
+    font-weight: 700;
+    color: var(--secondary-color);
+    white-space: nowrap;
+}
+
+.bulk-divider {
+    width: 2px;
+    height: 30px;
+    background: #eee;
+}
+
+.bulk-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.bulk-controls select {
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    outline: none;
+    background: #f9f9f9;
 }
 
 /* ===== BOUTONS ADMIN ===== */

@@ -154,8 +154,9 @@
 
                 <!-- Formulaire Nouvel Événement -->
                 <div id="newProjectForm" class="stat-card" style="display: none; margin-bottom: 30px; text-align: left;">
-                    <h3>Détails de l'événement</h3>
+                    <h3 id="projectFormTitle">Détails de l'événement</h3>
                     <form id="addProjectForm" style="margin-top: 20px;">
+                        <input type="hidden" id="editProjectId" value="">
                         <div class="form-group">
                             <label for="projectName">Nom de l'événement</label>
                             <input type="text" id="projectName" required placeholder="ex: Mariage de Julie & Marc">
@@ -180,7 +181,7 @@
                             <textarea id="projectDescription" rows="3" placeholder="Décrivez brièvement cet événement pour vos clients..."></textarea>
                         </div>
                         <div class="btn-admin-group">
-                            <button type="submit" class="btn-admin-primary">Enregistrer l'événement</button>
+                            <button type="submit" class="btn-admin-primary" id="projectSubmitBtn">Enregistrer l'événement</button>
                             <button type="button" class="btn-admin-secondary" onclick="hideNewProjectForm()">Annuler</button>
                         </div>
                     </form>
@@ -256,20 +257,20 @@
                 </div>
 
                 <!-- Barre flottante pour Actions Groupées (Masquée par défaut) -->
-                <div id="bulkActionsBar" class="bulk-floating-bar" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1001; display: flex; align-items: center; gap: 20px; border: 2px solid var(--primary-color);">
-                    <div class="bulk-info" style="font-weight: 700; color: var(--secondary-color); white-space: nowrap;">
+                <div id="bulkActionsBar" class="bulk-floating-bar" style="display: none;">
+                    <div class="bulk-info">
                         <span id="selectedCount">0</span> photo(s)
                     </div>
-                    <div class="bulk-divider" style="width: 2px; height: 30px; background: #eee;"></div>
-                    <div class="bulk-controls" style="display: flex; gap: 10px; align-items: center;">
-                        <select id="bulkEventSelect" style="padding: 10px 15px; border-radius: 25px; border: 1px solid #ddd; outline: none; background: #f9f9f9;">
+                    <div class="bulk-divider"></div>
+                    <div class="bulk-controls">
+                        <select id="bulkEventSelect">
                             <option value="">Déplacer vers l'événement...</option>
                             <!-- Changé dynamiquement -->
                         </select>
-                        <button class="btn-admin-primary" onclick="applyBulkMove()" style="padding: 10px 20px; border-radius: 25px; font-weight: 700;">
+                        <button class="btn-admin-primary" onclick="applyBulkMove()">
                             <i class="fas fa-check-circle"></i> Appliquer
                         </button>
-                        <button class="btn-admin-secondary" onclick="clearBulkSelection()" style="padding: 10px 20px; border-radius: 25px;">
+                        <button class="btn-admin-secondary" onclick="clearBulkSelection()">
                             Annuler
                         </button>
                     </div>

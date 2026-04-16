@@ -421,6 +421,8 @@ section {
 
 .about-image {
     position: relative;
+    max-width: 450px;
+    margin: 0 auto;
 }
 
 .image-frame {
@@ -428,6 +430,11 @@ section {
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.image-frame:hover {
+    transform: scale(1.02);
 }
 
 .image-frame img {
